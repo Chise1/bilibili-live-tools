@@ -4,7 +4,6 @@ from printer import Printer
 import base64
 import requests
 
-
 # temporary app parameter
 appkey = '4409e2ce8ffd12b8'
 build = '101800'
