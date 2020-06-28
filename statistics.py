@@ -13,7 +13,7 @@ def decimal_time():
     return now.hour + now.minute / 60.0
 
 
-class Statistics:
+class Statistics:#统计功能？
     instance = None
 
     def __new__(cls, *args, **kw):

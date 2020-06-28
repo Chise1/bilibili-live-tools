@@ -3,18 +3,14 @@ import datetime
 import time
 import asyncio
 import traceback
-import os
-import configloader
 import utils
 from printer import Printer
+from Service import User
 
 
 class Tasks:
-
     def __init__(self):
-        fileDir = os.path.dirname(os.path.realpath('__file__'))
-        file_user = fileDir + "/conf/user.conf"
-        self.dic_user = configloader.load_user(file_user)
+        self.dic_user = User().load_account_conf()
 
     # 获取每日包裹奖励
     async def Daily_bag(self):
@@ -63,7 +59,7 @@ class Tasks:
                 Printer().printer(f"应援团{i1}应援失败,{json_response}", "Error", "red")
 
     async def send_gift(self):
-        if self.dic_user['gift']['on/off'] == '1':
+        if self.dic_user['gift']['on']:
             argvs, x = await utils.fetch_bag_list(printer=False)
             for i in range(0, len(argvs)):
                 giftID = argvs[i][0]
@@ -75,7 +71,7 @@ class Tasks:
                 Printer().printer(f"没有将要过期的礼物~", "Info", "green")
 
     async def auto_send_gift(self):
-        if self.dic_user['auto-gift']['on/off'] == "1":
+        if self.dic_user['auto-gift']['on']:
             a = await utils.fetch_medal(printer=False)
             # res = await bilibili().gift_list()
             # json_res = await res.json()
@@ -111,7 +107,7 @@ class Tasks:
             Printer().printer(f"自动送礼共送出亲密度为{int(calculate)}的礼物", "Info", "green")
 
     async def doublegain_coin2silver(self):
-        if self.dic_user['doublegain_coin2silver']['on/off'] == "1":
+        if self.dic_user['doublegain_coin2silver']['on']:
             response0 = await bilibili().request_doublegain_coin2silver()
             json_response0 = await response0.json()
             response1 = await bilibili().request_doublegain_coin2silver()
@@ -119,7 +115,7 @@ class Tasks:
             print(json_response0['msg'], json_response1['msg'])
 
     async def sliver2coin(self):
-        if self.dic_user['coin']['on/off'] == '1':
+        if self.dic_user['coin']['on']:
             response1 = await bilibili().silver2coin_app()
             json_response1 = await response1.json()
             Printer().printer(f"银瓜子兑换硬币状态:{json_response1['msg']}", "Info", "green")

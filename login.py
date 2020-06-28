@@ -1,7 +1,7 @@
+from Service import User
 from bilibili import bilibili
 from printer import Printer
 import base64
-import configloader
 import requests
 
 
@@ -14,7 +14,6 @@ app_secret = '59b43e04ad6965f34319062b478f83dd'
 
 class login():
     auto_captcha_times = 3
-
     def normal_login(self, username, password):
         # url = 'https://passport.bilibili.com/api/oauth2/login'   //旧接口
         url = "https://passport.snm0516.aisee.tv/api/tv/login"
@@ -100,12 +99,12 @@ class login():
                     'cookie': cookie_format,
                     'uid': cookie_info['DedeUserID']
                 }
-                configloader.write2bilibili(dic_saved_session)
+                User().update_bilibili_conf(dic_saved_session)
                 Printer().printer(f"登录成功", "Info", "green")
             except:
                 Printer().printer(f"登录失败,错误信息为:{response.json()}", "Error", "red")
 
-    async def login_new(self):
+    async def login_new(self,):
         if bilibili().dic_bilibili['saved-session']['cookie']:
             Printer().printer(f"复用cookie", "Info", "green")
             bilibili().load_session(bilibili().dic_bilibili['saved-session'])

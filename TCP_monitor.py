@@ -8,11 +8,14 @@ import asyncio
 import json
 import traceback
 from struct import Struct
-
+from typing import Dict, Union
 from printer import Printer
 from pkLottery import PKLottery
 from guardLottery import GuardLottery
 from rafflehandler import Rafflehandler
+
+
+
 
 
 class TCP_monitor():
@@ -23,7 +26,7 @@ class TCP_monitor():
         self._writer = None
         self.connected = False
 
-    def _encapsulate(self, str_body):
+    def _encapsulate(self, str_body: str):
         body = str_body.encode('utf-8')
         len_body = len(body)
         len_header = 4
@@ -85,6 +88,7 @@ class TCP_monitor():
         return bytes_enter
 
     async def send_bytes(self, bytes_data) -> bool:
+        print("发送：", bytes_data)
         try:
             self._writer.write(bytes_data)
             await self._writer.drain()
@@ -143,7 +147,7 @@ class TCP_monitor():
                 break
 
     async def parseDanMu(self, dic):
-
+        print("接收:", dic)
         cmd = dic.get('cmd')
         if cmd is None:
             Printer().printer(dic, "Error", "red")

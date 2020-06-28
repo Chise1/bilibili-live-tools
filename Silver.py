@@ -6,15 +6,12 @@ from printer import Printer
 
 
 class Silver:
-
     # 将time_end时间转换成正常时间
     async def DataTime(self):
         datatime = str(datetime.datetime.fromtimestamp(float(await self.time_end())))
         return datatime
-
     # 领瓜子时判断领取周期的参数
     async def time_start(self):
-
         response = await bilibili().get_time_about_silver()
         temp = await response.json()
         if temp['code'] == -10017:
@@ -45,7 +42,7 @@ class Silver:
             pass
 
     async def run(self):
-        while 1:
+        while True:
             Printer().printer(f"检查宝箱状态", "Info", "green")
             temp = await self.GetAward()
             if temp == None or temp == -10017:

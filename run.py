@@ -10,7 +10,6 @@ from login import login
 from printer import Printer
 from statistics import Statistics
 from bilibili import bilibili
-import threading
 import biliconsole
 from pkLottery import PKLottery
 from guardLottery import GuardLottery
@@ -22,37 +21,37 @@ fileDir = os.path.dirname(os.path.realpath('__file__'))
 file_user = fileDir + "/conf/user.conf"
 dic_user = configloader.load_user(file_user)
 
-
 loop = asyncio.get_event_loop()
-printer = Printer(dic_user['thoroughly_log']['on/off'])
+printer = Printer(dic_user['thoroughly_log']['on'])
 bilibili()
 Statistics()
 rafflehandler = Rafflehandler()
 biliconsole.Biliconsole()
 
-task = OnlineHeart()
-task1 = Silver()
-task2 = Tasks()
-task3 = LotteryResult()
-task4 = connect()
-task5 = PKLottery()
-task6 = GuardLottery()
+task = OnlineHeart()  # 在线心跳
+task1 = Silver()  # 领取银瓜子
+task2 = Tasks()  # 获取每日包裹奖励，签到功能，领取每日任务奖励，应援团签到，过期礼物处理，银瓜子兑换硬币，硬币换瓜子，将当前佩戴的勋章亲密度送满，
+task3 = LotteryResult()  # 广播抽奖检测
+task4 = connect()  # 新的战疫分区直播间实际上没有弹幕区???
+task5 = PKLottery()  # 大乱斗抽奖？
+task6 = GuardLottery()  # 上船奖励？
 
 tasks1 = [
     login().login_new()
 ]
 loop.run_until_complete(asyncio.wait(tasks1))
 
-console_thread = threading.Thread(target=biliconsole.controler)
-console_thread.start()
-
+# 任务
+# import threading
+# console_thread = threading.Thread(target=biliconsole.controler)
+# console_thread.start()
 
 
 tasks = [
     task.run(),
     task1.run(),
     task2.run(),
-    biliconsole.Biliconsole().run(),
+    biliconsole.Biliconsole().run(),#？？？？？
     task4.create(),
     task3.query(),
     rafflehandler.run(),
@@ -60,8 +59,7 @@ tasks = [
     task6.run()
 ]
 
-
-if dic_user['monitoy_server']['on/off'] == "1":
+if dic_user['monitoy_server']['on']:#监控服务器
     monitor = TCP_monitor()
     task_tcp_conn = monitor.connectServer(
         dic_user['monitoy_server']['host'], dic_user['monitoy_server']['port'], dic_user['monitoy_server']['key'])
@@ -70,10 +68,9 @@ if dic_user['monitoy_server']['on/off'] == "1":
     tasks.append(task_tcp_heart)
 
 schedule = Schedule()
-if dic_user['regular_sleep']['on/off'] == "1":
+if dic_user['regular_sleep']['on']:
     tasks.append(schedule.run(dic_user['regular_sleep']['schedule']))
     Schedule().scheduled_sleep = True
-
 
 tasks = list(map(asyncio.ensure_future, tasks))
 loop.run_until_complete(asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION))
@@ -84,4 +81,4 @@ for task in tasks:
         Printer().printer(f"Task err: {repr(task.exception())}", "Error", "red")
 loop.close()
 
-console_thread.join()
+# console_thread.join()

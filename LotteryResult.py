@@ -5,7 +5,6 @@ import asyncio
 class LotteryResult():
 
     async def query(self):
-        while 1:
+        while True:
             await Statistics().clean_TV()
-
             await asyncio.sleep(30)

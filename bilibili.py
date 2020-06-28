@@ -1,7 +1,5 @@
 import sys
 from imp import reload
-import configloader
-import os
 import hashlib
 import datetime
 import time
@@ -12,9 +10,8 @@ from urllib import parse
 from printer import Printer
 import aiohttp
 import asyncio
-
+from Service import User
 reload(sys)
-
 
 def CurrentTime():
     currenttime = int(time.mktime(datetime.datetime.now().timetuple()))
@@ -27,19 +24,16 @@ class bilibili():
     def __new__(cls, *args, **kw):
         if not cls.instance:
             cls.instance = super(bilibili, cls).__new__(cls, *args, **kw)
-            fileDir = os.path.dirname(os.path.realpath('__file__'))
-            file_bilibili = fileDir + "/conf/bilibili.conf"
-            cls.instance.dic_bilibili = configloader.load_bilibili(
-                file_bilibili)
             cls.instance.bili_session = None
             cls.instance.black_status = False
         return cls.instance
-
+    async def init(self):
+        self.dic_bilibili = (await User().load_bilibili_conf())
+        print(self.dic_bilibili)
     @property
     def bili_section(self):
         if self.bili_session is None:
             self.bili_session = aiohttp.ClientSession()
-            # print(0)
         return self.bili_session
 
     @staticmethod

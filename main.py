@@ -1,7 +1,8 @@
 # !/usr/bin/python
 # -*- coding:utf-8 -*-
 import subprocess, time, sys
-
+from subprocess import Popen
+from typing import Optional
 TIME = 3600
 CMD = "run.py"
 
@@ -14,7 +15,7 @@ class Auto_Run():
         self.sleep_time = sleep_time
         self.cmd = cmd
         self.ext = (cmd[-3:]).lower()
-        self.p = None
+        self.p:Optional[Popen[str]]= None
         self.run()
 
         try:
@@ -25,7 +26,6 @@ class Auto_Run():
                     print("restarting......")
                     self.p.kill()
                     self.run()
-
                 else:
                     print("starting......")
                     self.run()
@@ -42,6 +42,5 @@ class Auto_Run():
                                       stderr=sys.stderr, shell=False)
         else:
             pass
-
 
 app = Auto_Run(TIME, CMD)

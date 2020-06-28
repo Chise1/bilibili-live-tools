@@ -37,8 +37,8 @@ class connect():
         init_time = time.time()
         for area in connect.areas:
             self.check_time[area] = init_time
-        for roomid,area in zip(connect.roomids, connect.areas):
-            self.danmuji = bilibiliClient(roomid,area)
+        for roomid, area in zip(connect.roomids, connect.areas):
+            self.danmuji = bilibiliClient(roomid, area)
             task1 = asyncio.ensure_future(self.danmuji.connectServer())
             task2 = asyncio.ensure_future(self.danmuji.HeartbeatLoop())
             connect.tasks[roomid] = [task1, task2]
@@ -132,7 +132,7 @@ class connect():
                 connect.roomids.append(new_roomid)
                 connect.areas.append(new_area)
                 connect.tasks[new_roomid] = []
-                Printer().printer(f"更新监听房间列表{connect.roomids} {connect.areas}","Info","green")
+                Printer().printer(f"更新监听房间列表{connect.roomids} {connect.areas}", "Info", "green")
 
             self.danmuji = bilibiliClient(new_roomid, new_area)
             task11 = asyncio.ensure_future(self.danmuji.connectServer())
