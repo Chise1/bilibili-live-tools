@@ -1,8 +1,11 @@
+import rsa
+
 from Service import User
 from bilibili import bilibili
 from printer import Printer
 import base64
 import requests
+from urllib import parse
 
 # temporary app parameter
 appkey = '4409e2ce8ffd12b8'
@@ -11,11 +14,15 @@ build = '101800'
 mobi_app = 'android_tv_yst'
 app_secret = '59b43e04ad6965f34319062b478f83dd'
 
+
 class login():
     auto_captcha_times = 3
+
     def normal_login(self, username, password):
-        # url = 'https://passport.bilibili.com/api/oauth2/login'   //旧接口
-        url = "https://passport.snm0516.aisee.tv/api/tv/login"
+        # url = 'https://passport.bilibili.com/api/oauth2/login'   #旧接口
+        # url = "https://passport.snm0516.aisee.tv/api/tv/login"
+        url = "https://passport.bilibili.com/api/v3/oauth2/login"
+
         temp_params = f"appkey={appkey}&build={build}&captcha=&channel=master&guid=XYEBAA3E54D502E17BD606F0589A356902FCF&mobi_app={mobi_app}&password={password}&platform={bilibili().dic_bilibili['platform']}&token=5598158bcd8511e1&ts=0&username={username}"
         data = f"{temp_params}&sign={bilibili().calc_sign(temp_params, app_secret)}"
         headers = {"Content-type": "application/x-www-form-urlencoded"}
@@ -103,9 +110,53 @@ class login():
             except:
                 Printer().printer(f"登录失败,错误信息为:{response.json()}", "Error", "red")
 
-    async def login_new(self,):
+    async def login_new(self, ):
         if bilibili().dic_bilibili['saved-session']['cookie']:
             Printer().printer(f"复用cookie", "Info", "green")
             bilibili().load_session(bilibili().dic_bilibili['saved-session'])
         else:
             return self.login()
+
+    async def login2(self,):
+        username = bilibili().dic_bilibili['account']['username']
+        password = bilibili().dic_bilibili['account']['password']
+        json_rsp = await bilibili().fetch_key()
+        data = json_rsp['data']
+        pubkey = rsa.PublicKey.load_pkcs1_openssl_pem(data['key'])
+        crypto_password = base64.b64encode(
+            rsa.encrypt((data['hash'] + password).encode('utf-8'), pubkey)
+        )
+        url_password = parse.quote_plus(crypto_password)
+        url_name = parse.quote_plus(username)
+
+        json_rsp = await bilibili().login_bili2(url_name, url_password)
+        while json_rsp['code'] == -105:
+            binary_rsp = await bilibili().fetch_capcha()
+            captcha = await bilibili().cnn_captcha2( binary_rsp)
+            json_rsp = await bilibili().login_bili2(url_name, url_password, captcha)
+
+        if not json_rsp['code'] and not json_rsp['data']['status']:
+            data = json_rsp['data']
+            access_key = data['token_info']['access_token']
+            refresh_token = data['token_info']['refresh_token']
+            cookies = data['cookie_info']['cookies']
+            list_cookies = [f'{i["name"]}={i["value"]}' for i in cookies]
+            cookie = ';'.join(list_cookies)
+            login_data = {
+                'csrf': cookies[0]['value'],
+                'access_key': access_key,
+                'refresh_token': refresh_token,
+                'cookie': cookie,
+                'uid': cookies[1]['value']
+            }
+            await User().update_bilibili_conf(login_data)
+        else:
+            login_data = {
+                'csrf': f'{json_rsp}',
+                'access_key': '',
+                'refresh_token': '',
+                'cookie': '',
+                'uid': 'NULL'
+            }
+            await User().update_bilibili_conf(login_data)
+            return False

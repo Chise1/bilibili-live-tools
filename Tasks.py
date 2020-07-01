@@ -59,6 +59,8 @@ class Tasks:
                 Printer().printer(f"应援团{i1}应援失败,{json_response}", "Error", "red")
 
     async def send_gift(self):
+        if not isinstance(self.dic_user,dict):
+            self.dic_user=await self.dic_user
         if self.dic_user['gift']['on']:
             argvs, x = await utils.fetch_bag_list(printer=False)
             for i in range(0, len(argvs)):
@@ -107,6 +109,8 @@ class Tasks:
             Printer().printer(f"自动送礼共送出亲密度为{int(calculate)}的礼物", "Info", "green")
 
     async def doublegain_coin2silver(self):
+        if not isinstance(self.dic_user,dict):
+            self.dic_user=await self.dic_user
         if self.dic_user['doublegain_coin2silver']['on']:
             response0 = await bilibili().request_doublegain_coin2silver()
             json_response0 = await response0.json()
@@ -115,6 +119,8 @@ class Tasks:
             print(json_response0['msg'], json_response1['msg'])
 
     async def sliver2coin(self):
+        if not isinstance(self.dic_user,dict):
+            self.dic_user=await self.dic_user
         if self.dic_user['coin']['on']:
             response1 = await bilibili().silver2coin_app()
             json_response1 = await response1.json()

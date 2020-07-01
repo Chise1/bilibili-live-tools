@@ -15,8 +15,9 @@ async def run(account_id: int):
     from statistics import Statistics
     Statistics()
     biliconsole_task = biliconsole.Biliconsole()
-    login_tasks = login().login_new()
-    asyncio.create_task(login_tasks, name="login")
+    # login_tasks = login().login_new()
+    login_tasks=login().login2()
+    await login_tasks
     from comments import load_tasks
     tasks = await load_tasks(user)
     asyncio.create_task(biliconsole_task.run(), name="biliconsole")

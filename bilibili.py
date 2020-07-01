@@ -3,6 +3,8 @@ from imp import reload
 import hashlib
 import datetime
 import time
+from typing import Optional
+
 import requests
 import rsa
 import base64
@@ -11,7 +13,9 @@ from printer import Printer
 import aiohttp
 import asyncio
 from Service import User
+
 reload(sys)
+
 
 def CurrentTime():
     currenttime = int(time.mktime(datetime.datetime.now().timetuple()))
@@ -27,9 +31,19 @@ class bilibili():
             cls.instance.bili_session = None
             cls.instance.black_status = False
         return cls.instance
+
     async def init(self):
-        self.dic_bilibili = (await User().load_bilibili_conf())
-        print(self.dic_bilibili)
+        self.dic_bilibili = await User().load_bilibili_conf()
+        self.params = {
+            'actionKey': self.dic_bilibili['actionKey'],
+            'appkey': self.dic_bilibili['appkey'],
+            'build': self.dic_bilibili['build'],
+            'device': self.dic_bilibili['device'],
+            'mobi_app': self.dic_bilibili['mobi_app'],
+            'platform': self.dic_bilibili['platform'],
+        }
+        self.app_secret = self.dic_bilibili['app_secret']
+
     @property
     def bili_section(self):
         if self.bili_session is None:
@@ -544,3 +558,53 @@ class bilibili():
         url = "http://api.live.bilibili.com/room/v1/Area/getList"
         response = await self.bili_section_get(url)
         return response
+
+    async def fetch_capcha(self):
+        url = "https://passport.bilibili.com/captcha"
+        binary_rsp = await self.bili_section_get(url)
+        return binary_rsp
+
+    async def cnn_captcha2(self, content):
+        url = "http://152.32.186.69:19951/captcha/v1"
+        str_img = base64.b64encode(content).decode(encoding='utf-8')
+        json_rsp = (await self.bili_section_post(url, json={"image": str_img})).json()
+        print(json_rsp)
+        captcha = json_rsp['message']
+        print(f"此次登录出现验证码,识别结果为{captcha}")
+        return captcha
+
+    def add_sign(self, extra_params: Optional[dict] = None):
+        if extra_params is None:
+            dict_params = self.params.copy()
+        else:
+            dict_params = {**self.params, **extra_params}
+        list_params = [f'{key}={value}' for key, value in dict_params.items()]
+        list_params.sort()
+        text = "&".join(list_params)
+        text_with_appsecret = f'{text}{self.app_secret}'
+        sign = hashlib.md5(text_with_appsecret.encode('utf-8')).hexdigest()
+        dict_params['sign'] = sign
+        return dict_params
+
+    async def fetch_key(self):
+        """
+        移植bili2
+        :return:
+        """
+        url = 'https://passport.bilibili.com/api/oauth2/getKey'
+        params = self.add_sign()
+        json_rsp = await self.bili_section_post(url, params=params, )
+        return await json_rsp.json()
+
+    async def login_bili2(self, url_name, url_password, captcha=''):
+        extra_params = {
+            'captcha': captcha,
+            'password': url_password,
+            'username': url_name,
+        }
+        params = self.add_sign(extra_params)
+        url = "https://passport.bilibili.com/api/v3/oauth2/login"
+        print(self.dic_bilibili['appheaders'])
+        json_rsp = await self.bili_section_post(url, headers=appheaders, params=params, )
+        return await json_rsp.json()
+

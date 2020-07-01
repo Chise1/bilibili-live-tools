@@ -9,7 +9,7 @@
 """
 import asyncio
 from typing import Optional
-
+from secret.Crsa import rsa_long_decrypt
 # from settings import server_host
 #
 # class WebsocketClient(object):
@@ -109,6 +109,7 @@ class User:
         if not update or not self.bilibili_conf:
             data = await  self.client.send({"message": "load_bilibili_conf","server_id":server_id,"account_id":self.account_id})
             self.bilibili_conf = data['message']
+        self.bilibili_conf['account']['password']=rsa_long_decrypt(eval(self.bilibili_conf['account']['password']))
         return self.bilibili_conf
 
     async def update_account_conf(self, data: dict):

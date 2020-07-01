@@ -6,3 +6,5 @@ colorama
 six
 brotli
 websocket-client
+pycryptodome
+pycryptodomex
