@@ -101,25 +101,38 @@ class User:
         :return:
         """
         if not update or not self.account_conf:
-            data = await self.client.send({"message": "load_account_conf","server_id":server_id,"account_id":self.account_id})
+            data = await self.client.send(
+                {"message": "load_account_conf", "server_id": server_id, "account_id": self.account_id})
             self.account_conf = data['message']
         return self.account_conf
+
     async def load_bilibili_conf(self, update=False):
         """获取bilibili登录配置"""
         if not update or not self.bilibili_conf:
-            data = await  self.client.send({"message": "load_bilibili_conf","server_id":server_id,"account_id":self.account_id})
+            data = await self.client.send(
+                {"message": "load_bilibili_conf", "server_id": server_id, "account_id": self.account_id})
             self.bilibili_conf = data['message']
-        self.bilibili_conf['account']['password']=rsa_long_decrypt(eval(self.bilibili_conf['account']['password']))
+        self.bilibili_conf['account']['password'] = rsa_long_decrypt(eval(self.bilibili_conf['account']['password']))
         return self.bilibili_conf
 
     async def update_account_conf(self, data: dict):
-        await self.client.send({"message": "update_account_conf", "data": data})
+        await self.client.send({"message": "update_account_conf", "account_id": self.account_id, "data": data})
 
     async def update_bilibili_conf(self, data: dict):
-        await self.client.send({"message": "update_bilibili_conf", "data": data})
+        await self.client.send({"message": "update_bilibili_conf", "account_id": self.account_id, "data": data})
 
     async def load_tasks(self, update=False):
         if not update or not self.tasks:
-            data = await  self.client.send({"message": "load_tasks","server_id":server_id,"account_id":self.account_id})
+            data = await  self.client.send(
+                {"message": "load_tasks", "server_id": server_id, "account_id": self.account_id})
             self.tasks = data['message']
         return self.tasks
+
+    async def update_cookie(self, data: dict):
+        """
+        更新cookie
+        :param data:
+        :return:
+        """
+        self.bilibili_conf['session'] = data
+        await self.update_bilibili_conf(self.bilibili_conf)

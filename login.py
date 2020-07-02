@@ -70,7 +70,7 @@ class login():
         response = requests.get(url, allow_redirects=False)
         return response.cookies.get_dict(domain=".bilibili.com")
 
-    def login(self):
+    async def login(self):
         username = str(bilibili().dic_bilibili['account']['username'])
         password = str(bilibili().dic_bilibili['account']['password'])
         if username != "":
@@ -105,15 +105,15 @@ class login():
                     'cookie': cookie_format,
                     'uid': cookie_info['DedeUserID']
                 }
-                User().update_bilibili_conf(dic_saved_session)
+                await User().update_cookie(dic_saved_session)
                 Printer().printer(f"登录成功", "Info", "green")
             except:
                 Printer().printer(f"登录失败,错误信息为:{response.json()}", "Error", "red")
 
     async def login_new(self, ):
-        if bilibili().dic_bilibili['saved-session']['cookie']:
+        if bilibili().dic_bilibili['session']['cookie']:
             Printer().printer(f"复用cookie", "Info", "green")
-            bilibili().load_session(bilibili().dic_bilibili['saved-session'])
+            bilibili().load_session(bilibili().dic_bilibili['session'])
         else:
             return self.login()
 
@@ -149,7 +149,7 @@ class login():
                 'cookie': cookie,
                 'uid': cookies[1]['value']
             }
-            await User().update_bilibili_conf(login_data)
+            await User().update_cookie(login_data)
         else:
             login_data = {
                 'csrf': f'{json_rsp}',
@@ -158,5 +158,5 @@ class login():
                 'cookie': '',
                 'uid': 'NULL'
             }
-            await User().update_bilibili_conf(login_data)
+            await User().update_cookie(login_data)
             return False

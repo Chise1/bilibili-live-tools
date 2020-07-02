@@ -605,6 +605,5 @@ class bilibili():
         params = self.add_sign(extra_params)
         url = "https://passport.bilibili.com/api/v3/oauth2/login"
         print(self.dic_bilibili['appheaders'])
-        json_rsp = await self.bili_section_post(url, headers=appheaders, params=params, )
+        json_rsp = await self.bili_section_post(url, headers=self.dic_bilibili['appheaders'], params=params, )
         return await json_rsp.json()
-

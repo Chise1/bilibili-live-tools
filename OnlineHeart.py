@@ -83,7 +83,7 @@ class OnlineHeart:
                 json_response = await response.json(content_type=None)
                 if json_response['code'] in [3, -101]:
                     Printer().printer(f"cookie过期,将重新登录", "Error", "red")
-                    login().login()
+                    await login().login()
                 await self.apppost_heartbeat()
                 await self.heart_gift()
                 await self.draw_lottery()
